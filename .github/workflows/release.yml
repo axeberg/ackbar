@@ -2,9 +2,14 @@ name: Release
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - 'release-v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 0.1.0)'
+        required: true
+        type: string
 
 jobs:
   build:
@@ -16,14 +21,14 @@ jobs:
 
       - name: Build binary
         run: |
-          swiftc -O ackbar -o ackbar
+          swiftc -O ackbar.swift -o ackbar
           chmod +x ackbar
 
       - name: Create universal binary (optional)
         run: |
           # Build for both architectures if needed
-          swiftc -O ackbar -o ackbar-x86_64 -target x86_64-apple-macos10.14
-          swiftc -O ackbar -o ackbar-arm64 -target arm64-apple-macos11.0
+          swiftc -O ackbar.swift -o ackbar-x86_64 -target x86_64-apple-macos10.14
+          swiftc -O ackbar.swift -o ackbar-arm64 -target arm64-apple-macos11.0
           lipo -create -output ackbar ackbar-x86_64 ackbar-arm64
           rm ackbar-x86_64 ackbar-arm64
         continue-on-error: true
@@ -39,8 +44,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: v${{ inputs.version || github.ref_name }}
+          release_name: Release v${{ inputs.version || github.ref_name }}
+          commitish: ${{ github.sha }}
           draft: false
           prerelease: false
           body: |

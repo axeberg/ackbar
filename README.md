@@ -1,12 +1,12 @@
 <div align="center">
-  <img src="img/ackbar.png" alt="Ackbar Icon" width="128" height="128">
-  
+  <img src="./img/ackbar.png" alt="Ackbar Icon" width="128" height="128">
+
   # ackbar
-  
+
   **A lightweight macOS menu bar manager**
-  
+
   Hide menu bar icons instantly • Keyboard shortcuts • Auto-hide • Position memory
-  
+
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
   [![macOS](https://img.shields.io/badge/macOS-10.14+-blue.svg)](https://www.apple.com/macos/)
   [![Swift](https://img.shields.io/badge/Swift-5.0+-orange.svg)](https://swift.org/)
@@ -42,8 +42,6 @@ curl -sSL https://raw.githubusercontent.com/axeberg/ackbar/main/scripts/install.
 
 2. Install using just:
    ```bash
-   just install-all  # Installs binary and Raycast scripts
-   # or
    just install      # Installs only the binary
    ```
 
@@ -144,7 +142,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT License - see [./LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
