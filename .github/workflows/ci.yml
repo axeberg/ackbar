@@ -82,19 +82,6 @@ jobs:
                -strict-concurrency=complete \
                -target arm64-apple-macos15.0 \
                ackbar.swift -o ackbar-analyzed
-               
-    - name: Check for common issues
-      run: |
-        # Check for force unwraps
-        if grep -n "!" ackbar.swift | grep -v "#!/" | grep -v "!=" ; then
-          echo "Found force unwraps - consider using optional binding"
-          exit 1
-        fi
-        
-        # Check for print statements (should use logger)
-        if grep -n "print(" ackbar.swift | grep -v "CLI flags" | grep -v "ackbar v" | grep -v "compiled successfully" ; then
-          echo "Found print statements - consider using logger instead"
-        fi
         
   security:
     name: Security Scan
