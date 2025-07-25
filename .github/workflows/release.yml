@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build binary
+        run: |
+          swiftc -O ackbar -o ackbar
+          chmod +x ackbar
+
+      - name: Create universal binary (optional)
+        run: |
+          # Build for both architectures if needed
+          swiftc -O ackbar -o ackbar-x86_64 -target x86_64-apple-macos10.14
+          swiftc -O ackbar -o ackbar-arm64 -target arm64-apple-macos11.0
+          lipo -create -output ackbar ackbar-x86_64 ackbar-arm64
+          rm ackbar-x86_64 ackbar-arm64
+        continue-on-error: true
+
+      - name: Test binary
+        run: |
+          ./ackbar --version
+          ./ackbar --help
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+          body: |
+            ## Installation
+
+            ```bash
+            curl -sSL https://github.com/${{ github.repository }}/releases/latest/download/ackbar -o ackbar
+            chmod +x ackbar
+            sudo mv ackbar /usr/local/bin/
+            ```
+
+            ## What's New
+            - See [commits](https://github.com/${{ github.repository }}/commits) for details
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./ackbar
+          asset_name: ackbar
+          asset_content_type: application/octet-stream
