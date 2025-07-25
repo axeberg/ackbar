@@ -1,0 +1,36 @@
+# SwiftFormat configuration
+# https://github.com/nicklockwood/SwiftFormat
+
+# Format options
+--indent 4
+--indentcase false
+--trimwhitespace always
+--linebreaks lf
+--maxwidth 120
+--decimalgrouping 3
+--binarygrouping 4
+--octalgrouping 4
+--hexgrouping 4
+--exponentgrouping disabled
+--fractiongrouping disabled
+
+# Rules
+--enable isEmpty
+--enable sortImports
+--enable trailingSpace
+--enable consecutiveBlankLines
+--enable blankLinesAtStartOfScope
+--enable blankLinesAtEndOfScope
+--enable redundantReturn
+--enable redundantSelf
+--enable void
+--enable unusedArguments
+--enable redundantType
+--enable redundantPattern
+--enable redundantInit
+--enable semicolons
+--enable strongifiedSelf
+
+# Exclude
+--exclude .build
+--exclude Ackbar.app

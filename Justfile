@@ -38,6 +38,66 @@ clean:
     rm -f ackbar ackbar-binary
     @echo "✓ Cleaned"
 
+# Run linting checks
+lint:
+    @echo "Running SwiftLint..."
+    @if command -v swiftlint &> /dev/null; then \
+        swiftlint lint; \
+    else \
+        echo "⚠️  SwiftLint not installed. Install with: brew install swiftlint"; \
+    fi
+    @echo ""
+    @echo "Running SwiftFormat..."
+    @if command -v swiftformat &> /dev/null; then \
+        swiftformat --lint .; \
+    else \
+        echo "⚠️  SwiftFormat not installed. Install with: brew install swiftformat"; \
+    fi
+
+# Fix linting issues automatically
+fix:
+    @echo "Auto-fixing with SwiftLint..."
+    @if command -v swiftlint &> /dev/null; then \
+        swiftlint --fix --quiet || true; \
+    else \
+        echo "⚠️  SwiftLint not installed. Install with: brew install swiftlint"; \
+    fi
+    @echo ""
+    @echo "Formatting with SwiftFormat..."
+    @if command -v swiftformat &> /dev/null; then \
+        swiftformat . || true; \
+    else \
+        echo "⚠️  SwiftFormat not installed. Install with: brew install swiftformat"; \
+    fi
+
+# Run all CI checks locally
+ci: lint build test ci-strict
+    @echo "✅ All CI checks passed!"
+
+# Run strict concurrency and analysis checks
+ci-strict:
+    @echo "Running strict concurrency checks..."
+    swiftc -warnings-as-errors \
+           -warn-concurrency \
+           -enable-actor-data-race-checks \
+           -strict-concurrency=complete \
+           -target arm64-apple-macos15.0 \
+           ackbar.swift -o /tmp/ackbar-analyzed
+    @rm -f /tmp/ackbar-analyzed
+    @echo "✓ Strict concurrency checks passed"
+
+# Install development dependencies
+deps:
+    @echo "Installing development dependencies..."
+    brew install swiftlint swiftformat
+    @echo "✓ Dependencies installed"
+
+# Install pre-commit hook
+install-hooks:
+    @echo "Installing pre-commit hook..."
+    @ln -sf ../../scripts/pre-commit.sh .git/hooks/pre-commit
+    @echo "✓ Pre-commit hook installed"
+
 # Quick test without building
 quick-test:
     swift ackbar.swift --test

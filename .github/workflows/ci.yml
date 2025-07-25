@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'VERSION'
+      - '**.md'
+
+jobs:
+  build-test:
+    name: Build and Test
+    runs-on: macos-15
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Swift version
+      run: swift --version
+      
+    - name: Build Debug
+      run: |
+        swiftc -warnings-as-errors -enable-testing -g -target arm64-apple-macos15.0 ackbar.swift -o ackbar-debug
+        
+    - name: Build Release
+      run: |
+        swiftc -warnings-as-errors -O -target arm64-apple-macos15.0 ackbar.swift -o ackbar
+        
+    - name: Test binary
+      run: |
+        ./ackbar --version
+        ./ackbar --test
+        
+    - name: Check binary size
+      run: |
+        ls -lh ackbar
+        # Fail if binary is larger than 150KB
+        size=$(stat -f%z ackbar)
+        if [ $size -gt 153600 ]; then
+          echo "Binary size ($size bytes) exceeds 150KB limit"
+          exit 1
+        fi
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: SwiftLint
+      uses: norio-nomura/action-swiftlint@3.2.1
+      with:
+        args: --strict
+        
+  format:
+    name: Format Check
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: SwiftFormat
+      run: |
+        brew install swiftformat
+        swiftformat --lint . --reporter github-actions-log
+        
+  analyze:
+    name: Static Analysis
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build with diagnostics
+      run: |
+        swiftc -warnings-as-errors \
+               -warn-concurrency \
+               -enable-actor-data-race-checks \
+               -strict-concurrency=complete \
+               -target arm64-apple-macos15.0 \
+               ackbar.swift -o ackbar-analyzed
+               
+    - name: Check for common issues
+      run: |
+        # Check for force unwraps
+        if grep -n "!" ackbar.swift | grep -v "#!/" | grep -v "!=" ; then
+          echo "Found force unwraps - consider using optional binding"
+          exit 1
+        fi
+        
+        # Check for print statements (should use logger)
+        if grep -n "print(" ackbar.swift | grep -v "CLI flags" | grep -v "ackbar v" | grep -v "compiled successfully" ; then
+          echo "Found print statements - consider using logger instead"
+        fi
+        
+  security:
+    name: Security Scan
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Check entitlements
+      run: |
+        # Verify no unnecessary entitlements
+        codesign -d --entitlements - ackbar 2>/dev/null || echo "Binary not signed (OK for CI)"
+        
+    - name: Check dependencies
+      run: |
+        # List all linked libraries
+        otool -L ackbar || echo "Binary not built yet"
+        
+    - name: Install TruffleHog
+      run: |
+        brew install trufflehog
+        
+    - name: Scan for secrets
+      run: |
+        # TruffleHog filesystem doesn't support exclude-paths, scan only source files
+        trufflehog filesystem ackbar.swift --no-update --fail --no-verification
+        
