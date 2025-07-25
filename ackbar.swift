@@ -28,8 +28,8 @@ if arguments.contains("--test") {
 }
 
 class MenuBarHider: NSObject, NSApplicationDelegate {
-    var btnSeparate: NSStatusItem!
-    var btnExpandCollapse: NSStatusItem!
+    var btnSeparate: NSStatusItem?
+    var btnExpandCollapse: NSStatusItem?
     let statusBar = NSStatusBar.system
     @MainActor static var shared: MenuBarHider?
 
@@ -111,7 +111,7 @@ class MenuBarHider: NSObject, NSApplicationDelegate {
         // Create expand/collapse button first (appears on the right)
         btnExpandCollapse = statusBar.statusItem(withLength: NSStatusItem.squareLength)
         // Don't set autosaveName for chevron - prevents it from being moved
-        if let button = btnExpandCollapse.button {
+        if let button = btnExpandCollapse?.button {
             button.image = createCollapseImage()
             button.imagePosition = .imageOnly
             button.target = self
@@ -122,8 +122,8 @@ class MenuBarHider: NSObject, NSApplicationDelegate {
 
         // Create separator - this is what expands/collapses
         btnSeparate = statusBar.statusItem(withLength: btnExpandedLength)
-        btnSeparate.autosaveName = "com.ackbar.separator"
-        if let button = btnSeparate.button {
+        btnSeparate?.autosaveName = "com.ackbar.separator"
+        if let button = btnSeparate?.button {
             button.image = createSeparatorImage()
             button.imagePosition = .imageOnly
             button.appearsDisabled = true
@@ -164,9 +164,9 @@ class MenuBarHider: NSObject, NSApplicationDelegate {
         let quitItem = NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         menu.addItem(quitItem)
 
-        btnExpandCollapse.menu = menu
-        btnExpandCollapse.button?.performClick(nil)
-        btnExpandCollapse.menu = nil
+        btnExpandCollapse?.menu = menu
+        btnExpandCollapse?.button?.performClick(nil)
+        btnExpandCollapse?.menu = nil
     }
 
     @objc func toggleAutoHide() {
@@ -179,11 +179,11 @@ class MenuBarHider: NSObject, NSApplicationDelegate {
     @MainActor
     private func collapseMenuBar() {
         // Set to huge length to hide everything to the left
-        btnSeparate.length = btnHiddenLength
+        btnSeparate?.length = btnHiddenLength
         isCollapsed = true
         UserDefaults.standard.set(true, forKey: prefsKey)
 
-        if let button = btnExpandCollapse.button {
+        if let button = btnExpandCollapse?.button {
             button.image = createExpandImage()
         }
         print("✓ Icons hidden")
@@ -196,11 +196,11 @@ class MenuBarHider: NSObject, NSApplicationDelegate {
     @MainActor
     private func expandMenubar() {
         // Set to variable length to show everything
-        btnSeparate.length = btnExpandedLength
+        btnSeparate?.length = btnExpandedLength
         isCollapsed = false
         UserDefaults.standard.set(false, forKey: prefsKey)
 
-        if let button = btnExpandCollapse.button {
+        if let button = btnExpandCollapse?.button {
             button.image = createCollapseImage()
         }
         print("✓ Icons visible")
@@ -294,10 +294,10 @@ class MenuBarHider: NSObject, NSApplicationDelegate {
         if let monitor = eventMonitor {
             NSEvent.removeMonitor(monitor)
         }
-        if btnSeparate != nil {
+        if let btnSeparate {
             statusBar.removeStatusItem(btnSeparate)
         }
-        if btnExpandCollapse != nil {
+        if let btnExpandCollapse {
             statusBar.removeStatusItem(btnExpandCollapse)
         }
     }
@@ -355,10 +355,10 @@ class MenuBarHider: NSObject, NSApplicationDelegate {
         print("🚨 Emergency reset triggered - recreating status items")
 
         // Remove existing items
-        if btnSeparate != nil {
+        if let btnSeparate {
             statusBar.removeStatusItem(btnSeparate)
         }
-        if btnExpandCollapse != nil {
+        if let btnExpandCollapse {
             statusBar.removeStatusItem(btnExpandCollapse)
         }
 
