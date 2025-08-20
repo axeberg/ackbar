@@ -6,7 +6,7 @@
 # Build artifacts
 ackbar
 Ackbar.app/
-AppIcon.icns
+# AppIcon.icns
 *.swiftmodule
 *.swiftdoc
 *.dylib
